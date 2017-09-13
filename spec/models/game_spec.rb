@@ -127,4 +127,83 @@ RSpec.describe Game, type: :model do
       end
     end
   end
+
+  describe '.answer_current_question!' do
+    let(:q) { game_w_questions.current_game_question }
+
+    context 'answer is correct' do
+      it 'returns truthy value' do
+        expect(game_w_questions.answer_current_question!(q.correct_answer_key)).to be_truthy
+      end
+
+      it 'increase game level' do
+        expect { game_w_questions.answer_current_question!(q.correct_answer_key) }.to change(game_w_questions, :current_level).by(1)
+      end
+
+      context 'question is not last' do
+        it 'game does not finish' do
+          game_w_questions.answer_current_question!(q.correct_answer_key)
+
+          expect(game_w_questions).not_to be_finished
+          expect(game_w_questions.finished_at).to be_nil
+          expect(game_w_questions.status).to eq :in_progress
+        end
+      end
+
+      context 'question is last' do
+        it 'game finishes with :won status' do
+          game_w_questions.current_level = 14
+          game_w_questions.answer_current_question!(q.correct_answer_key)
+
+          expect(game_w_questions).to be_finished
+          expect(game_w_questions.finished_at).not_to be_nil
+          expect(game_w_questions.status).to eq :won
+        end
+      end
+    end
+
+    context 'answer is wrong' do
+      let(:answers) { %w(a b c d) }
+      let(:wrong_answers) { answers.reject { |a| a == q.correct_answer_key } }
+      let(:wrong_answer) { wrong_answers.sample }
+
+      it 'returns falsey value' do
+        expect(game_w_questions.answer_current_question!(wrong_answer)).to be_falsey
+      end
+
+      it 'do not increase game level' do
+        expect { game_w_questions.answer_current_question!(wrong_answer) }.not_to change(game_w_questions, :current_level)
+      end
+
+      it 'game finishes with :fail status' do
+        game_w_questions.answer_current_question!(wrong_answer)
+
+        expect(game_w_questions).to be_finished
+        expect(game_w_questions.finished_at).not_to be_nil
+        expect(game_w_questions.status).to eq :fail
+      end
+    end
+
+    context 'time is out' do
+      before(:each) do
+        game_w_questions.created_at = 1.hour.ago
+      end
+
+      it 'returns falsey value' do
+        expect(game_w_questions.answer_current_question!(q.correct_answer_key)).to be_falsey
+      end
+
+      it 'do not increase game level' do
+        expect { game_w_questions.answer_current_question!(q.correct_answer_key) }.not_to change(game_w_questions, :current_level)
+      end
+
+      it 'game finishes with :timeout status' do
+        game_w_questions.answer_current_question!(q.correct_answer_key)
+
+        expect(game_w_questions).to be_finished
+        expect(game_w_questions.finished_at).not_to be_nil
+        expect(game_w_questions.status).to eq :timeout
+      end
+    end
+  end
 end
