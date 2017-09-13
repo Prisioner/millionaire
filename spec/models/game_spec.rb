@@ -103,4 +103,28 @@ RSpec.describe Game, type: :model do
       end
     end
   end
+
+  context '.current_game_question' do
+    it 'returns question with correct level' do
+      q = game_w_questions.current_game_question
+
+      expect(q.level).to eq game_w_questions.current_level
+    end
+  end
+
+  context '.previous_level' do
+    it 'returns -1 for new game' do
+      expect(game_w_questions.previous_level).to eq -1
+    end
+
+    it 'returns correct previous level for each current level' do
+      Question::QUESTION_LEVELS.each do |i|
+        q = game_w_questions.current_game_question
+        game_w_questions.answer_current_question!(q.correct_answer_key)
+        current_level = game_w_questions.current_level
+
+        expect(game_w_questions.previous_level).to eq current_level - 1
+      end
+    end
+  end
 end
