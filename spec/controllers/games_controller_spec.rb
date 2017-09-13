@@ -14,6 +14,47 @@ RSpec.describe GamesController, type: :controller do
       expect(response).to redirect_to new_user_session_path
       expect(flash[:alert]).to be
     end
+
+    it 'kick from #create' do
+      generate_questions(15)
+
+      post :create
+      game = assigns(:game)
+
+      expect(game).to be_nil
+
+      expect(response.status).not_to eq 200
+      expect(response).to redirect_to new_user_session_path
+      expect(flash[:alert]).to be
+    end
+
+    it 'kick from #answer' do
+      put :answer, id: game_w_questions.id, letter: game_w_questions.current_game_question.correct_answer_key
+
+      # перезагружаем игру
+      game_w_questions.reload
+
+      # убеждаемся, что уровень игры не изменился
+      expect(game_w_questions.current_level).to be_zero
+
+      expect(response.status).not_to eq 200
+      expect(response).to redirect_to new_user_session_path
+      expect(flash[:alert]).to be
+    end
+
+    it 'kick from #take_money' do
+      post :take_money, id: game_w_questions.id
+
+      # перезагружаем игру
+      game_w_questions.reload
+
+      # убеждаемся, что игра не закончилась
+      expect(game_w_questions).not_to be_finished
+
+      expect(response.status).not_to eq 200
+      expect(response).to redirect_to new_user_session_path
+      expect(flash[:alert]).to be
+    end
   end
 
   context 'Usual user' do
