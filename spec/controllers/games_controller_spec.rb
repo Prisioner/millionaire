@@ -43,7 +43,7 @@ RSpec.describe GamesController, type: :controller do
     end
 
     it 'kick from #take_money' do
-      post :take_money, id: game_w_questions.id
+      put :take_money, id: game_w_questions.id
 
       # перезагружаем игру
       game_w_questions.reload
