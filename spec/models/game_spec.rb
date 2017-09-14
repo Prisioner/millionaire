@@ -106,9 +106,9 @@ RSpec.describe Game, type: :model do
 
   context '.current_game_question' do
     it 'returns question with correct level' do
-      q = game_w_questions.current_game_question
+      l = game_w_questions.current_level
 
-      expect(q.level).to eq game_w_questions.current_level
+      expect(game_w_questions.current_game_question).to eq game_w_questions.game_questions[l]
     end
   end
 
