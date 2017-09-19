@@ -92,6 +92,13 @@ class GameQuestion < ActiveRecord::Base
     save
   end
 
+  def add_friend_call
+    # массив ключей
+    keys_to_use = keys_to_use_in_help
+    self.help_hash[:friend_call] = GameHelpGenerator.friend_call(keys_to_use, correct_answer_key)
+    save
+  end
+
   private
 
   # Рассчитываем какие ключи нам доступны в подсказках
