@@ -30,6 +30,22 @@ RSpec.describe GameQuestion, type: :model do
     it 'correct .correct_answer_key' do
       expect(game_question.correct_answer_key).to eq 'b'
     end
+
+    it 'correct .help_hash' do
+      expect(game_question.help_hash).to be_empty
+
+      # добавляем пару ключей
+      game_question.help_hash[:some_key1] = 'some_value_1'
+      game_question.help_hash['some_key2'] = 'some_value_2'
+
+      # сохраняем модель и ожидаем сохранения хорошего
+      expect(game_question.save).to be_truthy
+
+      game_question.reload
+
+      # проверяем новые значение хэша
+      expect(game_question.help_hash).to eq({some_key1: 'some_value_1', 'some_key2' => 'some_value_2'})
+    end
   end
 
   context 'user helpers' do
@@ -40,6 +56,21 @@ RSpec.describe GameQuestion, type: :model do
 
       expect(game_question.help_hash).to include(:audience_help)
       expect(game_question.help_hash[:audience_help].keys).to contain_exactly('a', 'b', 'c', 'd')
+    end
+
+    # проверяем работу 50/50
+    it 'correct fifty_fifty' do
+      # сначала убедимся, в подсказках пока нет нужного ключа
+      expect(game_question.help_hash).not_to include(:fifty_fifty)
+      # вызовем подсказку
+      game_question.add_fifty_fifty
+
+      # проверим создание подсказки
+      expect(game_question.help_hash).to include(:fifty_fifty)
+      ff = game_question.help_hash[:fifty_fifty]
+
+      expect(ff).to include('b') # должен остаться правильный вариант
+      expect(ff.size).to eq 2 # всего должно остаться 2 варианта
     end
   end
 end

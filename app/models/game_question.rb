@@ -84,6 +84,14 @@ class GameQuestion < ActiveRecord::Base
     save
   end
 
+  def add_fifty_fifty
+    self.help_hash[:fifty_fifty] = [
+      correct_answer_key,
+      (%w(a b c d) - [correct_answer_key]).sample
+    ]
+    save
+  end
+
   private
 
   # Рассчитываем какие ключи нам доступны в подсказках
