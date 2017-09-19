@@ -145,5 +145,19 @@ RSpec.describe GamesController, type: :controller do
       expect(response).to redirect_to game_path(game_w_questions)
       expect(flash[:alert]).to be
     end
+
+    it 'uses audience help' do
+      expect(game_w_questions.current_game_question.help_hash[:audience_help]).not_to be
+      expect(game_w_questions.audience_help_used).to be_falsey
+
+      put :help, id: game_w_questions.id, help_type: :audience_help
+      game = assigns(:game)
+
+      expect(game).not_to be_finished
+      expect(game.audience_help_used).to be_truthy
+      expect(game.current_game_question.help_hash[:audience_help]).to be
+      expect(game.current_game_question.help_hash[:audience_help].keys).to contain_exactly('a', 'b', 'c', 'd')
+      expect(response).to redirect_to(game_path(game))
+    end
   end
 end
