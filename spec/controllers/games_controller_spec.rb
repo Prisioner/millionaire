@@ -174,5 +174,18 @@ RSpec.describe GamesController, type: :controller do
       expect(game.current_game_question.help_hash[:fifty_fifty]).to include(key)
       expect(response).to redirect_to(game_path(game))
     end
+
+    it 'uses friend_call help' do
+      expect(game_w_questions.current_game_question.help_hash[:friend_call]).not_to be
+      expect(game_w_questions.friend_call_used).to be_falsey
+
+      put :help, id: game_w_questions.id, help_type: :friend_call
+      game = assigns(:game)
+
+      expect(game).not_to be_finished
+      expect(game.friend_call_used).to be_truthy
+      expect(game.current_game_question.help_hash[:friend_call]).to be
+      expect(response).to redirect_to(game_path(game))
+    end
   end
 end
